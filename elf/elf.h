@@ -1835,12 +1835,12 @@ struct ElfRel<SH4> {
   // SH4 is RELA, r_addend is ignored in most cases and works as if it
   // were REL.
   ElfRel(u64 offset, u32 type, u32 sym, i64 addend)
-    : r_offset(offset), r_type(type), r_sym(sym), r_addend(sym ? 0 : addend) {}
+    : r_offset(offset), r_sym(sym), r_type(type), r_addend(sym ? 0 : addend) {}
 
-  ul32 r_offset;
+  ub32 r_offset;
+  ub24 r_sym;
   u8 r_type;
-  ul24 r_sym;
-  il32 r_addend;
+  ib32 r_addend;
 };
 
 //
@@ -2195,7 +2195,7 @@ struct M68K {
 struct SH4 {
   static constexpr std::string_view target_name = "sh4";
   static constexpr bool is_64 = false;
-  static constexpr bool is_le = true;
+  static constexpr bool is_le = false;
   static constexpr bool is_rela = true;
   static constexpr u32 page_size = 4096;
   static constexpr u32 e_machine = EM_SH;

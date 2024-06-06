@@ -679,7 +679,7 @@ std::vector<std::string> parse_nonpositional_args(Context<E> &ctx) {
         ctx.arg.emulation = SPARC64::target_name;
       } else if (arg == "m68kelf") {
         ctx.arg.emulation = M68K::target_name;
-      } else if (arg == "shlelf_linux") {
+      } else if (arg == "shelf_linux" || arg == "shelf") {
         ctx.arg.emulation = SH4::target_name;
       } else if (arg == "elf64alpha") {
         ctx.arg.emulation = ALPHA::target_name;

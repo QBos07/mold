@@ -84,7 +84,7 @@ i64 get_addend(u8 *loc, const ElfRel<E> &rel) {
   case R_SH_GOTOFF:
   case R_SH_GOTPC:
   case R_SH_GOTPLT32:
-    return *(ul32 *)loc;
+    return *(ub32 *)loc;
   default:
     return 0;
   }
@@ -108,7 +108,7 @@ void write_addend(u8 *loc, i64 val, const ElfRel<E> &rel) {
   case R_SH_GOTOFF:
   case R_SH_GOTPC:
   case R_SH_GOTPLT32:
-    *(ul32 *)loc = val;
+    *(ub32 *)loc = val;
   }
 }
 
@@ -127,7 +127,7 @@ void write_plt_header(Context<E> &ctx, u8 *buf) {
 
     static_assert(sizeof(insn) == E::plt_hdr_size);
     memcpy(buf, insn, sizeof(insn));
-    *(ul32 *)(buf + 12) = ctx.gotplt->shdr.sh_addr - ctx.got->shdr.sh_addr;
+    *(ub32 *)(buf + 12) = ctx.gotplt->shdr.sh_addr - ctx.got->shdr.sh_addr;
   } else {
     static const u8 insn[] = {
       0x02, 0xd2, //    mov.l   1f, r2
@@ -141,7 +141,7 @@ void write_plt_header(Context<E> &ctx, u8 *buf) {
 
     static_assert(sizeof(insn) == E::plt_hdr_size);
     memcpy(buf, insn, sizeof(insn));
-    *(ul32 *)(buf + 12) = ctx.gotplt->shdr.sh_addr;
+    *(ub32 *)(buf + 12) = ctx.gotplt->shdr.sh_addr;
   }
 }
 
@@ -159,8 +159,8 @@ void write_plt_entry(Context<E> &ctx, u8 *buf, Symbol<E> &sym) {
 
     static_assert(sizeof(insn) == E::plt_size);
     memcpy(buf, insn, sizeof(insn));
-    *(ul32 *)(buf + 8) = sym.get_gotplt_addr(ctx) - ctx.got->shdr.sh_addr;
-    *(ul32 *)(buf + 12) = sym.get_plt_idx(ctx) * sizeof(ElfRel<E>);
+    *(ub32 *)(buf + 8) = sym.get_gotplt_addr(ctx) - ctx.got->shdr.sh_addr;
+    *(ub32 *)(buf + 12) = sym.get_plt_idx(ctx) * sizeof(ElfRel<E>);
   } else {
     static const u8 insn[] = {
       0x01, 0xd0, //    mov.l   1f, r0
@@ -173,8 +173,8 @@ void write_plt_entry(Context<E> &ctx, u8 *buf, Symbol<E> &sym) {
 
     static_assert(sizeof(insn) == E::plt_size);
     memcpy(buf, insn, sizeof(insn));
-    *(ul32 *)(buf + 8) = sym.get_gotplt_addr(ctx);
-    *(ul32 *)(buf + 12) = sym.get_plt_idx(ctx) * sizeof(ElfRel<E>);
+    *(ub32 *)(buf + 8) = sym.get_gotplt_addr(ctx);
+    *(ub32 *)(buf + 12) = sym.get_plt_idx(ctx) * sizeof(ElfRel<E>);
   }
 }
 
@@ -191,7 +191,7 @@ void write_pltgot_entry(Context<E> &ctx, u8 *buf, Symbol<E> &sym) {
 
     static_assert(sizeof(insn) == E::pltgot_size);
     memcpy(buf, insn, sizeof(insn));
-    *(ul32 *)(buf + 8) = sym.get_got_pltgot_addr(ctx) - ctx.got->shdr.sh_addr;
+    *(ub32 *)(buf + 8) = sym.get_got_pltgot_addr(ctx) - ctx.got->shdr.sh_addr;
   } else {
     static const u8 insn[] = {
       0x01, 0xd0, //    mov.l   1f, r0
@@ -203,7 +203,7 @@ void write_pltgot_entry(Context<E> &ctx, u8 *buf, Symbol<E> &sym) {
 
     static_assert(sizeof(insn) == E::pltgot_size);
     memcpy(buf, insn, sizeof(insn));
-    *(ul32 *)(buf + 8) = sym.get_got_pltgot_addr(ctx);
+    *(ub32 *)(buf + 8) = sym.get_got_pltgot_addr(ctx);
   }
 }
 
@@ -216,10 +216,10 @@ void EhFrameSection<E>::apply_eh_reloc(Context<E> &ctx, const ElfRel<E> &rel,
   case R_NONE:
     break;
   case R_SH_DIR32:
-    *(ul32 *)loc = val;
+    *(ub32 *)loc = val;
     break;
   case R_SH_REL32:
-    *(ul32 *)loc = val - this->shdr.sh_addr - offset;
+    *(ub32 *)loc = val - this->shdr.sh_addr - offset;
     break;
   default:
     Fatal(ctx) << "unsupported relocation in .eh_frame: " << rel;
@@ -255,31 +255,31 @@ void InputSection<E>::apply_reloc_alloc(Context<E> &ctx, u8 *base) {
       break;
     case R_SH_REL32:
     case R_SH_PLT32:
-      *(ul32 *)loc = S + A - P;
+      *(ub32 *)loc = S + A - P;
       break;
     case R_SH_GOT32:
-      *(ul32 *)loc = G;
+      *(ub32 *)loc = G;
       break;
     case R_SH_GOTPC:
-      *(ul32 *)loc = GOT + A - P;
+      *(ub32 *)loc = GOT + A - P;
       break;
     case R_SH_GOTOFF:
-      *(ul32 *)loc = S + A - GOT;
+      *(ub32 *)loc = S + A - GOT;
       break;
     case R_SH_TLS_GD_32:
-      *(ul32 *)loc = sym.get_tlsgd_addr(ctx) + A - GOT;
+      *(ub32 *)loc = sym.get_tlsgd_addr(ctx) + A - GOT;
       break;
     case R_SH_TLS_LD_32:
-      *(ul32 *)loc = ctx.got->get_tlsld_addr(ctx) + A - GOT;
+      *(ub32 *)loc = ctx.got->get_tlsld_addr(ctx) + A - GOT;
       break;
     case R_SH_TLS_LDO_32:
-      *(ul32 *)loc = S + A - ctx.dtp_addr;
+      *(ub32 *)loc = S + A - ctx.dtp_addr;
       break;
     case R_SH_TLS_IE_32:
-      *(ul32 *)loc = sym.get_gottp_addr(ctx) + A - GOT;
+      *(ub32 *)loc = sym.get_gottp_addr(ctx) + A - GOT;
       break;
     case R_SH_TLS_LE_32:
-      *(ul32 *)loc = S + A - ctx.tp_addr;
+      *(ub32 *)loc = S + A - ctx.tp_addr;
       break;
     default:
       unreachable();
@@ -309,9 +309,9 @@ void InputSection<E>::apply_reloc_nonalloc(Context<E> &ctx, u8 *base) {
     switch (rel.r_type) {
     case R_SH_DIR32:
       if (std::optional<u64> val = get_tombstone(sym, frag))
-        *(ul32 *)loc = *val;
+        *(ub32 *)loc = *val;
       else
-        *(ul32 *)loc = S + A;
+        *(ub32 *)loc = S + A;
       break;
     default:
       Fatal(ctx) << *this << ": invalid relocation for non-allocated sections: "
